@@ -811,6 +811,7 @@ Enter values to generate projection.
             <div id="liq-scan" class="space-y-2 text-xs">
               <div class="text-[11px] text-slate-500">Tracks liquidity (price × volume)</div>
             </div>
+            <div id="whale-box" class="space-y-2 text-xs"></div>
           </div>
 
           <!-- WHALE WATCHER -->
@@ -2013,7 +2014,6 @@ function renderAll() {
   window._updateVolatility?.();
   window._updateCycle?.();
   window._updateNarratives?.();
-  window._updateAiInfo?.();
   window._updateLiquidity?.();
 
   // Intelligence suite
@@ -2627,49 +2627,6 @@ function renderNarratives() {
 }
 
 window._updateNarratives = renderNarratives;
-
-function renderAiInfoTable() {
-  const box = document.getElementById("ai-info-table");
-  if (!box || !state.lastPortfolioData) return;
-
-  const data = state.lastPortfolioData.data || {};
-  const aiCoins = NARRATIVES.ai || [];
-
-  const rows = aiCoins
-    .map(id => {
-      const d = data[id];
-      if (!d) return null;
-      return {
-        id,
-        price: d.price,
-        change: d.change24h ?? d.change24hPct ?? 0,
-        volume: d.volume24h,
-      };
-    })
-    .filter(Boolean);
-
-  if (!rows.length) {
-    box.innerHTML = '<p class="text-[11px] text-slate-500">AI tokens not loaded yet.</p>';
-    return;
-  }
-
-  box.innerHTML = [
-    '<div class="grid grid-cols-3 text-[10px] uppercase tracking-widest text-slate-500">',
-    '  <span>Token</span><span class="text-right">Price</span><span class="text-right">24h</span>',
-    '</div>',
-    ...rows.map(r => {
-      const changeColor = r.change >= 0 ? "text-emerald-300" : "text-rose-300";
-      return `
-        <div class="grid grid-cols-3 py-1.5 border-b border-slate-800/60 last:border-0">
-          <span class="font-semibold">${r.id.toUpperCase()}</span>
-          <span class="text-right">${r.price ? formatCurrency(r.price) : "--"}</span>
-          <span class="text-right ${changeColor}">${isFinite(r.change) ? r.change.toFixed(2) + "%" : "--"}</span>
-        </div>`;
-    })
-  ].join("");
-}
-
-window._updateAiInfo = renderAiInfoTable;
 
 function renderLiquidityScanner() {
   const box = document.getElementById("liq-scan");
