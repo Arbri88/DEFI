@@ -586,6 +586,38 @@ Enter values to generate projection.
               </div>
             </section>
 
+            <!-- MARKET SENTIMENT -->
+            <section class="glass-card rounded-2xl p-5">
+              <div class="flex items-center justify-between mb-4">
+                <h2 class="text-sm font-semibold">Market Sentiment</h2>
+                <span class="text-[10px] text-emerald-400">Fear & Greed</span>
+              </div>
+
+              <div class="space-y-4">
+                <div>
+                  <div class="flex justify-between text-xs text-slate-400 mb-1">
+                    <span>Index</span>
+                    <span id="fng-value" class="font-mono text-slate-200">--</span>
+                  </div>
+                  <div class="h-2 rounded-full bg-slate-800 overflow-hidden">
+                    <div id="fng-bar" class="h-full rounded-full bg-emerald-400 transition-all duration-700" style="width: 0%"></div>
+                  </div>
+                  <div id="fng-label" class="text-[11px] text-slate-400 mt-1">Loading...</div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 text-xs">
+                  <div class="rounded-xl bg-slate-900/60 border border-slate-800/60 p-3">
+                    <div class="text-[10px] uppercase tracking-widest text-slate-500">BTC Dominance</div>
+                    <div id="btc-dom" class="text-lg font-semibold mt-1">--</div>
+                  </div>
+                  <div class="rounded-xl bg-slate-900/60 border border-slate-800/60 p-3">
+                    <div class="text-[10px] uppercase tracking-widest text-slate-500">Altseason</div>
+                    <div id="alt-season" class="text-lg font-semibold mt-1">--</div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
             <!-- NEWS -->
             <section class="glass-card rounded-2xl p-5">
               <div class="flex items-center justify-between mb-4">
@@ -596,6 +628,15 @@ Enter values to generate projection.
               </div>
               <div id="news-list" class="flex gap-3 overflow-x-auto news-scroll pb-2 snap-x snap-mandatory"></div>
               <p id="news-empty" class="text-center text-xs text-slate-500">Loading news...</p>
+            </section>
+
+            <!-- AI TOKENS SNAPSHOT -->
+            <section class="glass-card rounded-2xl p-5">
+              <div class="flex items-center justify-between mb-4">
+                <h2 class="text-sm font-semibold">AI Tokens Snapshot</h2>
+                <span class="text-[10px] text-cyan-300">Narrative</span>
+              </div>
+              <div id="ai-info-table" class="space-y-2 text-xs text-slate-200"></div>
             </section>
 
             <!-- WATCHLIST -->
@@ -770,6 +811,7 @@ Enter values to generate projection.
             <div id="liq-scan" class="space-y-2 text-xs">
               <div class="text-[11px] text-slate-500">Tracks liquidity (price × volume)</div>
             </div>
+            <div id="whale-box" class="space-y-2 text-xs"></div>
           </div>
 
           <!-- WHALE WATCHER -->
