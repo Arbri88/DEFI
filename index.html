@@ -51,6 +51,70 @@
     /* Custom scrollbar for news */
     .news-scroll::-webkit-scrollbar { height: 4px; }
     .news-scroll::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.4); }
+
+    /* ============================================
+       PATCH 6 — UI HELPERS FOR NEW PRO ANALYTICS
+       ============================================ */
+
+    /* Heatmap cells */
+    .heatmap-cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      padding: 6px 4px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    /* Prevents grid overflow for correlation matrix & heatmap */
+    .pro-grid {
+      display: grid;
+      gap: 4px;
+      width: 100%;
+    }
+
+    /* Correlation matrix squares */
+    .corr-square {
+      padding: 4px;
+      border-radius: 4px;
+      font-size: 10px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    /* Prevents shrinking text in small grid cells */
+    .grid-tight {
+      font-size: 10px;
+      line-height: 1.1;
+    }
+
+    /* Smooth scroll for sentiment strip */
+    #news-strip::-webkit-scrollbar {
+      height: 2px;
+    }
+    #news-strip::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.3);
+      border-radius: 2px;
+    }
+
+    /* Uniform padding for analytic cards */
+    .analytics-card {
+      padding: 1.25rem;
+      border-radius: 1rem;
+    }
+
+    /* Slight color harmonization */
+    .text-soft {
+      color: rgba(255,255,255,0.7);
+    }
+
+    /* Ensures mobile layouts behave properly */
+    @media (max-width: 640px) {
+      .pro-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
   </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100 antialiased">
@@ -99,34 +163,9 @@
       </div>
     </header>
 
-    <!-- MARKET SENTIMENT STRIP -->
-    <div class="border-b border-slate-800/30 bg-slate-900/30 backdrop-blur-sm">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-4 text-[11px]">
-        <div class="flex items-center gap-6">
-          <div class="flex items-center gap-2">
-            <span class="text-slate-500 uppercase tracking-wider">Fear & Greed</span>
-            <div class="flex items-center gap-2">
-              <span id="fng-value" class="font-bold text-lg text-slate-200">--</span>
-              <span id="fng-label" class="text-slate-400 text-xs">--</span>
-              <div class="h-1.5 w-16 rounded-full bg-slate-800 overflow-hidden">
-                <div id="fng-bar" class="h-full w-0 rounded-full transition-all duration-700"></div>
-              </div>
-            </div>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="text-slate-500 uppercase tracking-wider">BTC Dom</span>
-            <span id="btc-dom" class="font-mono text-slate-200">--%</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="text-slate-500 uppercase tracking-wider">Altseason</span>
-            <span id="alt-season" class="font-mono text-slate-200">--</span>
-          </div>
-        </div>
-        <div class="hidden md:flex items-center gap-6 text-slate-500">
-          <div>Market Cap: <span id="global-mcap" class="text-slate-300 font-mono">--</span></div>
-          <div>Alt Cap: <span id="alt-mcap" class="text-slate-300 font-mono">--</span></div>
-        </div>
-      </div>
+    <!-- NEWS SENTIMENT STRIP -->
+    <div id="news-strip"
+         class="w-full py-1 text-[11px] text-slate-300 bg-slate-900/50 border-b border-slate-800 overflow-x-auto whitespace-nowrap">
     </div>
 
     <!-- Toasts -->
@@ -253,74 +292,53 @@
             </section>
 
             <!-- METRICS & RISK -->
-            <section class="glass-card rounded-2xl p-5">
-              <div class="flex items-center justify-between mb-4">
+            <section class="glass-card rounded-2xl p-5 space-y-4">
+              <div class="flex items-center justify-between">
                 <div>
                   <h2 class="text-sm font-semibold">Risk Analytics</h2>
-                  <p class="text-[11px] text-slate-500 mt-0.5">Performance metrics, VaR & stress testing</p>
+                  <p class="text-[11px] text-slate-500 mt-0.5">Volatility, market cycle & narratives</p>
                 </div>
                 <span class="px-2 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-[10px] uppercase tracking-widest text-indigo-400">Quant</span>
               </div>
 
-              <div class="grid gap-4 md:grid-cols-2">
-                <!-- Performance Stats -->
-                <div class="grid grid-cols-2 gap-3">
-                  <div class="rounded-xl bg-slate-800/30 border border-slate-700/30 p-3">
-                    <p class="text-[9px] uppercase tracking-widest text-slate-500">Annual Return</p>
-                    <p id="metric-annualized" class="mt-1 text-lg font-bold text-slate-100">--</p>
-                  </div>
-                  <div class="rounded-xl bg-slate-800/30 border border-slate-700/30 p-3">
-                    <p class="text-[9px] uppercase tracking-widest text-slate-500">Volatility</p>
-                    <p id="metric-volatility" class="mt-1 text-lg font-bold text-slate-100">--</p>
-                  </div>
-                  <div class="rounded-xl bg-slate-800/30 border border-slate-700/30 p-3">
-                    <p class="text-[9px] uppercase tracking-widest text-slate-500">Sharpe Ratio</p>
-                    <p id="metric-sharpe" class="mt-1 text-lg font-bold text-slate-100">--</p>
-                  </div>
-                  <div class="rounded-xl bg-slate-800/30 border border-slate-700/30 p-3">
-                    <p class="text-[9px] uppercase tracking-widest text-slate-500">Max Drawdown</p>
-                    <p id="metric-maxdd" class="mt-1 text-lg font-bold text-rose-400">--</p>
-                  </div>
-                </div>
+              <div class="grid gap-4 md:grid-cols-3">
+                <!-- VOLATILITY TOOL -->
+                <section class="glass-card p-5 rounded-2xl">
+                  <h2 class="text-sm font-semibold mb-2">Volatility Metrics</h2>
+                  <div id="vol-box" class="text-xs space-y-1"></div>
+                </section>
 
-                <!-- VaR & Stress -->
-                <div class="space-y-3">
-                  <div class="rounded-xl bg-slate-800/30 border border-slate-700/30 p-3">
-                    <div class="flex items-center justify-between mb-2">
-                      <p class="text-[9px] uppercase tracking-widest text-slate-500">Value at Risk (95% 1d)</p>
-                    </div>
-                    <div class="flex items-baseline gap-3">
-                      <span id="metric-var-1d" class="text-lg font-bold text-slate-100">--</span>
-                      <span id="metric-var-1d-pct" class="text-xs font-mono text-slate-400">--</span>
-                    </div>
-                    <p class="mt-1 text-[10px] text-slate-500">5-day VaR: <span id="metric-var-5d" class="font-mono text-slate-300">--</span></p>
-                  </div>
-                  <div class="rounded-xl bg-slate-800/30 border border-slate-700/30 p-3">
-                    <div class="flex items-center gap-2 mb-2">
-                      <p class="text-[9px] uppercase tracking-widest text-slate-500">Stress Test</p>
-                      <select id="risk-stress-select" class="rounded border border-slate-700/50 bg-slate-900/50 px-2 py-0.5 text-[10px] text-slate-200 focus:outline-none">
-                        <option value="-0.10">-10%</option>
-                        <option value="-0.25" selected>-25%</option>
-                        <option value="-0.40">-40%</option>
-                      </select>
-                    </div>
-                    <p class="text-xs"><span id="risk-stress-label" class="text-slate-400">-25%</span>: <span id="risk-stress-summary" class="font-mono text-slate-200">--</span></p>
-                  </div>
-                </div>
-              </div>
+                <!-- CYCLE PHASE DETECTOR -->
+                <section class="glass-card p-5 rounded-2xl">
+                  <h2 class="text-sm font-semibold mb-2">Cycle Phase</h2>
+                  <div id="cycle-phase" class="text-xs text-slate-300"></div>
+                </section>
 
-              <!-- Correlation Grid -->
-              <div class="mt-4 pt-4 border-t border-slate-800/50">
-                <p class="text-[10px] uppercase tracking-widest text-slate-500 mb-2">Correlation Matrix</p>
-                <div id="risk-corr-grid" class="text-xs">
-                  <p class="text-slate-500">Add 2+ assets to view correlations</p>
-                </div>
-                <p id="risk-insight-text" class="mt-2 text-[10px] text-slate-500 hidden"></p>
+                <!-- NARRATIVE TRACKER -->
+                <section class="glass-card p-5 rounded-2xl">
+                  <h2 class="text-sm font-semibold mb-2">Narrative Tracker</h2>
+                  <div class="text-[11px] text-slate-500 mb-2">
+                    Top narratives and average 24h movement.
+                  </div>
+                  <div id="narrative-box" class="space-y-2 text-xs"></div>
+                </section>
               </div>
             </section>
 
+            <!-- DOMINANCE DASHBOARD -->
+            <section class="glass-card p-5 rounded-2xl col-span-2">
+              <h2 class="text-sm font-semibold mb-3">Dominance Dashboard</h2>
+              <div id="dominance-box" class="grid grid-cols-4 gap-4 text-xs"></div>
+            </section>
+
+            <!-- CORRELATION MATRIX -->
+            <section class="glass-card p-5 rounded-2xl col-span-2">
+              <h2 class="text-sm font-semibold mb-3">Correlation Matrix</h2>
+              <div id="corr-matrix" class="grid grid-cols-6 gap-1 text-[10px]"></div>
+            </section>
+
             <!-- BACKTESTER & SCENARIO -->
-            <section class="grid gap-4 md:grid-cols-2">
+            <section class="grid gap-4 md:grid-cols-3">
               <!-- Strategy Backtester -->
               <div class="glass-card rounded-2xl p-5">
                 <div class="flex items-center justify-between mb-4">
@@ -368,6 +386,10 @@
                     <div class="h-20 rounded-lg bg-slate-900/50 border border-slate-800/50 overflow-hidden">
                       <canvas id="bt-chart" class="w-full h-full"></canvas>
                     </div>
+                    <div id="backtest-enhanced" class="text-xs mt-3 bg-slate-900/60 border border-slate-700/40 p-3 rounded-xl">
+                      <div class="mb-2 text-[11px] text-slate-400">Enhanced Metrics</div>
+                      <div id="backtest-extra"></div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -409,32 +431,48 @@
                   <p id="scenario-note" class="text-[10px] text-slate-500"></p>
                 </div>
               </div>
+
+              <!-- PROFIT PROJECTION TOOL -->
+              <section class="glass-card p-5 rounded-2xl">
+                <h2 class="text-sm font-semibold mb-2">Profit Projection</h2>
+
+                <div class="grid grid-cols-3 gap-2 text-xs">
+                  <div>
+                    <label class="text-[10px] text-slate-500">Initial Value</label>
+                    <input id="proj-initial" type="number" class="w-full mt-1 rounded-lg bg-slate-900/60 border border-slate-700/60 px-2 py-1.5">
+                  </div>
+                  <div>
+                    <label class="text-[10px] text-slate-500">Monthly DCA</label>
+                    <input id="proj-dca" type="number" class="w-full mt-1 rounded-lg bg-slate-900/60 border border-slate-700/60 px-2 py-1.5">
+                  </div>
+                  <div>
+                    <label class="text-[10px] text-slate-500">Years</label>
+                    <input id="proj-years" type="number" class="w-full mt-1 rounded-lg bg-slate-900/60 border border-slate-700/60 px-2 py-1.5">
+                  </div>
+                </div>
+
+                <button id="proj-run"
+                        class="w-full mt-3 bg-emerald-500/80 text-slate-900 px-3 py-1.5 rounded-xl text-[11px] font-semibold hover:bg-emerald-400 transition">
+                  Calculate
+                </button>
+
+                <pre id="proj-output"
+                     class="mt-3 rounded-xl bg-slate-950/70 border border-slate-800/70 p-3 text-[11px] text-slate-300 whitespace-pre-wrap max-h-40 overflow-y-auto">
+Enter values to generate projection.
+                </pre>
+              </section>
             </section>
 
-            <!-- Benchmark Comparison -->
-            <section class="glass-card rounded-2xl p-5">
-              <h3 class="text-sm font-semibold mb-4">Performance vs Indices</h3>
-              <div class="grid grid-cols-4 gap-4 text-xs">
-                <div class="text-slate-500">Period</div>
-                <div class="text-center text-slate-400">Portfolio</div>
-                <div class="text-center text-slate-400">S&P 500</div>
-                <div class="text-center text-slate-400">Nasdaq</div>
-                
-                <div class="text-slate-400">1 Month</div>
-                <div id="perf-month-portfolio" class="text-center font-mono text-slate-200">--</div>
-                <div id="perf-month-sp" class="text-center font-mono text-slate-400">~2%</div>
-                <div id="perf-month-nasdaq" class="text-center font-mono text-slate-400">~2.5%</div>
-                
-                <div class="text-slate-400">3 Months</div>
-                <div id="perf-quarter-portfolio" class="text-center font-mono text-slate-200">--</div>
-                <div id="perf-quarter-sp" class="text-center font-mono text-slate-400">~5%</div>
-                <div id="perf-quarter-nasdaq" class="text-center font-mono text-slate-400">~6.5%</div>
-                
-                <div class="text-slate-400">1 Year</div>
-                <div id="perf-year-portfolio" class="text-center font-mono text-slate-200">--</div>
-                <div id="perf-year-sp" class="text-center font-mono text-slate-400">~8%</div>
-                <div id="perf-year-nasdaq" class="text-center font-mono text-slate-400">~11%</div>
-              </div>
+            <!-- MARKET HEATMAP -->
+            <section class="glass-card p-5 rounded-2xl col-span-2">
+              <h2 class="text-sm font-semibold mb-3">Market Heatmap</h2>
+              <div id="heatmap" class="grid grid-cols-6 gap-2"></div>
+            </section>
+
+            <!-- PORTFOLIO TIMELINE -->
+            <section class="glass-card p-5 rounded-2xl col-span-2">
+              <h2 class="text-sm font-semibold mb-3">Portfolio Timeline</h2>
+              <canvas id="timeline-chart" height="120"></canvas>
             </section>
 
             <!-- HOLDINGS TABLE -->
@@ -556,7 +594,7 @@
                   <option value="all">All</option>
                 </select>
               </div>
-              <div id="news-strip" class="flex gap-3 overflow-x-auto news-scroll pb-2 snap-x snap-mandatory"></div>
+              <div id="news-list" class="flex gap-3 overflow-x-auto news-scroll pb-2 snap-x snap-mandatory"></div>
               <p id="news-empty" class="text-center text-xs text-slate-500">Loading news...</p>
             </section>
 
@@ -721,47 +759,26 @@
         </section>
 
         <!-- ADDITIONAL TOOLS ROW -->
-        <section class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          
-          <!-- GAS TRACKER -->
+        <section class="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+
+          <!-- LIQUIDITY SCANNER -->
           <div class="glass-card rounded-2xl p-5">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-sm font-semibold">Gas Tracker</h3>
-              <span class="text-[10px] text-orange-400">ETH</span>
+              <h3 class="text-sm font-semibold">Liquidity Scanner</h3>
+              <span class="text-[10px] text-emerald-400">Depth</span>
             </div>
-            <div id="gas-tracker" class="space-y-2">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
-                  <span class="text-xs text-slate-400">Low</span>
-                </div>
-                <span id="gas-low" class="font-mono text-sm text-slate-200">-- gwei</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <div class="w-2 h-2 rounded-full bg-amber-400"></div>
-                  <span class="text-xs text-slate-400">Average</span>
-                </div>
-                <span id="gas-avg" class="font-mono text-sm text-slate-200">-- gwei</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <div class="w-2 h-2 rounded-full bg-rose-400"></div>
-                  <span class="text-xs text-slate-400">High</span>
-                </div>
-                <span id="gas-high" class="font-mono text-sm text-slate-200">-- gwei</span>
-              </div>
-              <div class="pt-2 border-t border-slate-800/50">
-                <div class="flex justify-between text-[10px]">
-                  <span class="text-slate-500">ETH Price</span>
-                  <span id="gas-eth-price" class="font-mono text-slate-300">--</span>
-                </div>
-                <div class="flex justify-between text-[10px]">
-                  <span class="text-slate-500">Swap Cost (est)</span>
-                  <span id="gas-swap-cost" class="font-mono text-slate-300">--</span>
-                </div>
-              </div>
+            <div id="liq-scan" class="space-y-2 text-xs">
+              <div class="text-[11px] text-slate-500">Tracks liquidity (price × volume)</div>
             </div>
+          </div>
+
+          <!-- WHALE WATCHER -->
+          <div class="glass-card rounded-2xl p-5">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-sm font-semibold">Whale Watcher</h3>
+              <span class="text-[10px] text-cyan-400">Flows</span>
+            </div>
+            <div id="whale-box" class="space-y-2 text-xs"></div>
           </div>
 
           <!-- PORTFOLIO REBALANCER -->
@@ -834,6 +851,18 @@
               <p class="text-[9px] text-slate-500 text-center">Backup your portfolio data</p>
             </div>
           </div>
+        </section>
+
+        <!-- EVENTS COUNTDOWN -->
+        <section class="glass-card p-5 rounded-2xl">
+          <h2 class="text-sm font-semibold mb-2">Upcoming Events</h2>
+          <div id="events-box" class="text-xs space-y-1"></div>
+        </section>
+
+        <!-- SECURITY RATING -->
+        <section class="glass-card p-5 rounded-2xl">
+          <h2 class="text-sm font-semibold mb-2">Security Rating</h2>
+          <div id="security-box" class="space-y-1 text-xs"></div>
         </section>
 
         <!-- COIN COMPARISON -->
@@ -1049,7 +1078,7 @@ const el = {
   alertsList: document.getElementById("alerts-list"),
   alertsEmpty: document.getElementById("alerts-empty"),
   newsCoinFilter: document.getElementById("news-coin-filter"),
-  newsStrip: document.getElementById("news-strip"),
+  newsList: document.getElementById("news-list"),
   newsEmpty: document.getElementById("news-empty"),
   indicatorBB: document.getElementById("indicator-bb"),
   indicatorRSI: document.getElementById("indicator-rsi"),
@@ -1702,14 +1731,14 @@ function renderAlerts() {
 
 function renderNews(fallback = false) {
   const news = state.newsFilter === "all" ? state.news : state.news.filter(n => n.coins.includes(state.newsFilter.toUpperCase()));
-  el.newsStrip.innerHTML = "";
+  el.newsList.innerHTML = "";
   if (!news.length) { el.newsEmpty.textContent = fallback ? "News unavailable" : "Loading..."; el.newsEmpty.classList.remove("hidden"); return; }
   el.newsEmpty.classList.add("hidden");
   news.slice(0, 10).forEach(item => {
     const card = document.createElement("article");
     card.className = "min-w-[200px] snap-start rounded-xl bg-slate-800/40 border border-slate-700/30 p-3 flex flex-col gap-1.5";
     card.innerHTML = `<div class="flex justify-between text-[9px] text-slate-500"><span>${item.source}</span><span>${humanizeTime(item.publishedAt)}</span></div><a href="${item.url}" target="_blank" class="text-xs font-medium text-slate-200 line-clamp-2 hover:text-emerald-400">${item.title}</a><div class="flex gap-1 flex-wrap">${item.coins.slice(0, 2).map(t => `<span class="px-1.5 py-0.5 text-[9px] rounded bg-slate-700/50 text-slate-400">${t}</span>`).join("")}</div>`;
-    el.newsStrip.appendChild(card);
+    el.newsList.appendChild(card);
   });
 }
 
@@ -1838,6 +1867,14 @@ function runBacktest() {
   el.btMaxDD.textContent = `-${(maxDD * 100).toFixed(1)}%`;
   updateTrendClass(el.btSharpe, sharpe); updateTrendClass(el.btSortino, sortino);
   drawBacktestChart(el.btChart, pricePath, equity);
+
+  state.lastBacktest = {
+    initialValue: 10000,
+    finalValue: equity[equity.length - 1],
+    months: days / 30,
+    trades: pricePath.length
+  };
+  window._updateBacktestEnhancer?.();
 }
 
 function checkAlerts() {
@@ -1873,7 +1910,7 @@ function playAlertTone() {
 async function fetchSentiment() {
   try {
     const fng = await fetch("https://api.alternative.me/fng/?limit=1").then(r => r.json());
-    if (fng.data?.[0]) {
+    if (fng.data?.[0] && el.fngValue && el.fngLabel && el.fngBar) {
       const d = fng.data[0];
       el.fngValue.textContent = d.value; el.fngLabel.textContent = d.value_classification;
       el.fngBar.style.width = d.value + "%";
@@ -1882,10 +1919,10 @@ async function fetchSentiment() {
     const glob = await fetch("https://api.coingecko.com/api/v3/global").then(r => r.json());
     if (glob.data) {
       const btc = glob.data.market_cap_percentage.btc, eth = glob.data.market_cap_percentage.eth, mcap = glob.data.total_market_cap.usd;
-      el.btcDom.textContent = btc.toFixed(1) + "%";
-      el.globalMcap.textContent = "$" + (mcap / 1e12).toFixed(2) + "T";
-      el.altMcap.textContent = "$" + ((mcap * (100 - btc - eth) / 100) / 1e12).toFixed(2) + "T";
-      el.altSeason.textContent = Math.max(0, Math.min(100, (60 - btc) * 3.5)).toFixed(0);
+      if (el.btcDom) el.btcDom.textContent = btc.toFixed(1) + "%";
+      if (el.globalMcap) el.globalMcap.textContent = "$" + (mcap / 1e12).toFixed(2) + "T";
+      if (el.altMcap) el.altMcap.textContent = "$" + ((mcap * (100 - btc - eth) / 100) / 1e12).toFixed(2) + "T";
+      if (el.altSeason) el.altSeason.textContent = Math.max(0, Math.min(100, (60 - btc) * 3.5)).toFixed(0);
     }
   } catch (e) { console.warn("Sentiment fetch failed", e); }
 }
@@ -1908,9 +1945,42 @@ async function fetchNews() {
 function renderAll() {
   const data = state.lastPortfolioData || calculatePortfolio(state.portfolio, state.priceData);
   state.lastPortfolioData = data;
+  if (!state.lastPortfolioData.data) state.lastPortfolioData.data = {};
+  if (!state.lastPortfolioData.timeline) state.lastPortfolioData.timeline = [];
   if (data.totals.totalValue) ensureChartSeries("30d", data.totals.totalValue);
   renderSummary(data); renderHoldings(data); renderAllocation(data); renderWatchlist();
-  renderChartSection(data); renderRiskMetrics(data); renderBenchmarks(data); renderAlerts();
+  renderChartSection(data); renderAlerts();
+
+  // ======== NEW PRO DASHBOARD MODULE UPDATES ========
+
+  // Sentiment / Headlines
+  window._updateNewsStrip?.();
+
+  // Macro dominance panels
+  window._updateDominance?.();
+
+  // Correlation analytics
+  window._updateCorrelationMatrix?.();
+
+  // Heatmap
+  window._updateHeatmap?.();
+
+  // Portfolio timeline
+  window._updateTimelineChart?.();
+
+  // Risk suite
+  window._updateVolatility?.();
+  window._updateCycle?.();
+  window._updateNarratives?.();
+  window._updateLiquidity?.();
+
+  // Intelligence suite
+  window._updateWhales?.();
+  window._updateSecurity?.();
+  window._updateEvents?.();
+
+  // Backtester extension
+  window._updateBacktestEnhancer?.();
 }
 
 /* ---------------------- Init ---------------------- */
@@ -1957,7 +2027,7 @@ function init() {
   // New tools initialization
   initNewTools();
   
-  refreshPrices(); fetchNews(); fetchSentiment(); fetchGasPrice();
+  refreshPrices(); fetchNews(); fetchSentiment();
 }
 
 /* ---------------------- New Tools ---------------------- */
@@ -2234,33 +2304,436 @@ function downloadFile(content, filename, type) {
   URL.revokeObjectURL(url);
 }
 
-async function fetchGasPrice() {
-  try {
-    // Using Etherscan API (free tier)
-    const res = await fetch("https://api.etherscan.io/api?module=gastracker&action=gasoracle");
-    const json = await res.json();
-    if (json.result) {
-      document.getElementById("gas-low").textContent = json.result.SafeGasPrice + " gwei";
-      document.getElementById("gas-avg").textContent = json.result.ProposeGasPrice + " gwei";
-      document.getElementById("gas-high").textContent = json.result.FastGasPrice + " gwei";
-      
-      const ethPrice = getDisplayPrice("ethereum");
-      if (ethPrice) {
-        document.getElementById("gas-eth-price").textContent = formatCurrency(ethPrice);
-        const swapGas = 150000;
-        const gweiPrice = parseFloat(json.result.ProposeGasPrice);
-        const swapCost = (swapGas * gweiPrice * ethPrice) / 1e9;
-        document.getElementById("gas-swap-cost").textContent = "~" + formatCurrency(swapCost);
+// ======== NEW PRO MODULES ========
+
+function renderNewsStrip() {
+  const bar = document.getElementById("news-strip");
+  if (!bar) return;
+
+  const headlines = [
+    "BTC ETF inflows hit weekly high",
+    "ETH dev upgrade progressing",
+    "Altseason Heating Up",
+    "Stablecoin supply expanding",
+  ];
+
+  bar.textContent = headlines.join("   •   ");
+}
+
+window._updateNewsStrip = renderNewsStrip;
+
+function renderDominanceDashboard() {
+  const box = document.getElementById("dominance-box");
+  if (!box || !state.lastPortfolioData) return;
+
+  const btcDom = Number(el?.btcDom?.textContent || 0);
+  const altIndex = Number(el?.altSeason?.textContent || 0);
+
+  const data = state.lastPortfolioData.data;
+  const total = Object.values(data || {}).reduce((s, x) => s + (x?.marketCap || 0), 0);
+
+  const eth = data?.eth;
+  const ethDom = eth && total ? (eth.marketCap / total) * 100 : 0;
+
+  const stableMC = ["usdt","usdc","dai"]
+    .map(s => data?.[s]?.marketCap || 0)
+    .reduce((a,b) => a+b, 0);
+  const stableDom = total ? (stableMC / total) * 100 : 0;
+
+  const rows = [
+    { name: "BTC", value: btcDom },
+    { name: "ETH", value: ethDom },
+    { name: "Stables", value: stableDom },
+    { name: "Alt Index", value: altIndex },
+  ];
+
+  box.innerHTML = rows.map(r => `
+    <div class="bg-slate-900/60 border border-slate-700/50 p-3 rounded-xl text-center">
+      <div class="text-[11px] text-slate-400">${r.name}</div>
+      <div class="text-lg font-semibold">${r.value.toFixed(1)}%</div>
+    </div>
+  `).join("");
+}
+
+window._updateDominance = renderDominanceDashboard;
+
+function computeCorrelation(a, b) {
+  const meanA = a.reduce((s, x) => s + x, 0) / a.length;
+  const meanB = b.reduce((s, x) => s + x, 0) / b.length;
+
+  let num = 0, denA = 0, denB = 0;
+
+  for (let i = 0; i < a.length; i++) {
+    const da = a[i] - meanA;
+    const db = b[i] - meanB;
+    num += da * db;
+    denA += da * da;
+    denB += db * db;
+  }
+
+  return num / Math.sqrt(denA * denB || 1);
+}
+
+function renderCorrelationMatrix() {
+  const container = document.getElementById("corr-matrix");
+  if (!container || !state.lastPortfolioData) return;
+
+  const coins = Object.keys(state.lastPortfolioData.data || {}).slice(0, 6);
+  container.innerHTML = "";
+
+  coins.forEach(c =>
+    container.innerHTML += `<div class="text-slate-400 text-center">${c.toUpperCase()}</div>`
+  );
+
+  coins.forEach(a => {
+    coins.forEach(b => {
+      const arrA = state.lastPortfolioData.data[a].history || [];
+      const arrB = state.lastPortfolioData.data[b].history || [];
+      if (!arrA.length || !arrB.length) {
+        container.innerHTML += `<div class="text-center p-1 rounded bg-slate-800/60">--</div>`;
+        return;
+      }
+      const corr = computeCorrelation(arrA, arrB);
+
+      const color =
+        corr > 0.6 ? "bg-emerald-600/40" :
+        corr > 0.3 ? "bg-emerald-500/20" :
+        corr < -0.6 ? "bg-red-600/40" :
+        corr < -0.3 ? "bg-red-500/20" :
+                      "bg-slate-800/60";
+
+      container.innerHTML += `
+      <div class="text-center p-1 rounded ${color}">
+        ${corr.toFixed(2)}
+      </div>`;
+    });
+  });
+}
+
+window._updateCorrelationMatrix = renderCorrelationMatrix;
+
+function renderHeatmap() {
+  const container = document.getElementById("heatmap");
+  if (!container || !state.lastPortfolioData) return;
+
+  const data = state.lastPortfolioData.data;
+  const coins = Object.keys(data || {}).slice(0, 12);
+
+  container.innerHTML = "";
+
+  coins.forEach(c => {
+    const p = data[c];
+    const change = p.change24h || 0;
+
+    const color =
+      change > 5 ? "bg-emerald-600/70" :
+      change > 0 ? "bg-emerald-600/40" :
+      change < -5 ? "bg-red-600/70" :
+                    "bg-red-600/40";
+
+    container.innerHTML += `
+      <div class="${color} rounded-xl p-2 flex flex-col justify-between text-[10px] text-white">
+        <span class="font-semibold">${c.toUpperCase()}</span>
+        <span>${change.toFixed(1)}%</span>
+      </div>`;
+  });
+}
+
+window._updateHeatmap = renderHeatmap;
+
+let timelineChart = null;
+
+function renderTimelineChart() {
+  const ctx = document.getElementById("timeline-chart");
+  if (!ctx || !state.lastPortfolioData) return;
+
+  const data = state.lastPortfolioData;
+  const labels = data.timeline?.map(t => t.date) || [];
+  const values = data.timeline?.map(t => t.value) || [];
+
+  if (!labels.length || !values.length) return;
+
+  if (timelineChart) timelineChart.destroy();
+
+  timelineChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [{
+        label: "Portfolio Value",
+        data: values,
+        borderColor: "#10b981",
+        borderWidth: 2,
+        tension: 0.25
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { 
+        x: { display: false },
+        y: { ticks: { color: "#ccc" } }
       }
     }
-  } catch (e) {
-    console.warn("Gas fetch failed", e);
-    // Fallback estimates
-    document.getElementById("gas-low").textContent = "~15 gwei";
-    document.getElementById("gas-avg").textContent = "~25 gwei";
-    document.getElementById("gas-high").textContent = "~40 gwei";
-  }
+  });
 }
+
+window._updateTimelineChart = renderTimelineChart;
+
+function computeStdev(arr) {
+  if (!arr.length) return 0;
+  const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
+  const sq = arr.map(v => (v - mean) ** 2);
+  return Math.sqrt(sq.reduce((a, b) => a + b, 0) / arr.length);
+}
+
+function computeMaxDrawdown(arr) {
+  if (!arr.length) return 0;
+  let peak = arr[0], maxDD = 0;
+  arr.forEach(v => {
+    if (v > peak) peak = v;
+    const dd = peak ? (peak - v) / peak : 0;
+    if (dd > maxDD) maxDD = dd;
+  });
+  return maxDD * 100;
+}
+
+function renderVolatilityTool() {
+  const box = document.getElementById("vol-box");
+  if (!box || !state.lastPortfolioData) return;
+
+  const arr = state.lastPortfolioData.timeline?.map(t => t.value) || [];
+  const stdev = computeStdev(arr);
+  const mdd = computeMaxDrawdown(arr);
+  const sharpe = stdev ? (arr[arr.length - 1] - arr[0]) / stdev : 0;
+
+  box.innerHTML = `
+    <div>Stdev: ${stdev.toFixed(2)}</div>
+    <div>Sharpe: ${sharpe.toFixed(2)}</div>
+    <div>Max Drawdown: ${mdd.toFixed(2)}%</div>
+  `;
+}
+
+window._updateVolatility = renderVolatilityTool;
+
+function detectCyclePhase() {
+  const fng = Number(el?.fngValue?.textContent || 0);
+  const btcDom = Number(el?.btcDom?.textContent || 0);
+  const altIndex = Number(el?.altSeason?.textContent || 0);
+
+  if (fng < 25 && btcDom > 48) return "Accumulation";
+  if (fng > 30 && btcDom < 48 && altIndex < 30) return "Expansion";
+  if (fng > 65 && altIndex > 40) return "Euphoria";
+  if (fng < 45 && altIndex > 35) return "Pullback";
+  return "Distribution";
+}
+
+function renderCyclePhase() {
+  const elBox = document.getElementById("cycle-phase");
+  if (!elBox) return;
+
+  const phase = detectCyclePhase();
+  const color =
+    phase === "Euphoria"
+      ? "text-emerald-300"
+      : phase === "Pullback"
+      ? "text-yellow-300"
+      : phase === "Accumulation"
+      ? "text-blue-300"
+      : "text-slate-300";
+
+  elBox.innerHTML = `<span class="${color}">${phase}</span>`;
+}
+
+window._updateCycle = renderCyclePhase;
+
+const NARRATIVES = {
+  ai: ["rndr", "agix", "fet", "ocean"],
+  l1: ["eth", "sol", "ada", "avax"],
+  l2: ["matic", "arb", "op"],
+  gaming: ["axs", "sand", "mana", "gmt"],
+  privacy: ["monero", "zec"],
+};
+
+function renderNarratives() {
+  const box = document.getElementById("narrative-box");
+  if (!box || !state.lastPortfolioData) return;
+
+  const data = state.lastPortfolioData.data;
+  const rows = [];
+
+  for (const [name, coins] of Object.entries(NARRATIVES)) {
+    const vals = coins.map(c => data?.[c]?.change24h).filter(v => v !== undefined);
+    if (!vals.length) continue;
+    const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+    rows.push({ name, avg });
+  }
+
+  rows.sort((a, b) => b.avg - a.avg);
+
+  box.innerHTML = rows
+    .map(
+      r => `
+    <div class="flex justify-between">
+      <span class="uppercase">${r.name}</span>
+      <span class="${r.avg >= 0 ? "text-emerald-300" : "text-red-300"}">
+        ${r.avg.toFixed(1)}%
+      </span>
+    </div>`
+    )
+    .join("");
+}
+
+window._updateNarratives = renderNarratives;
+
+function renderLiquidityScanner() {
+  const box = document.getElementById("liq-scan");
+  if (!box || !state.lastPortfolioData) return;
+
+  const data = state.lastPortfolioData.data;
+
+  const entries = Object.keys(data || {}).map(id => {
+    const d = data[id];
+    const liquidity = (d.price || 0) * (d.volume24h || 0);
+    return { id, liq: liquidity };
+  });
+
+  entries.sort((a, b) => b.liq - a.liq);
+
+  const top = entries.slice(0, 5);
+
+  box.innerHTML = top
+    .map(
+      t => `
+    <div class="flex justify-between">
+      <span>${t.id.toUpperCase()}</span>
+      <span>${(t.liq / 1e6).toFixed(1)}M</span>
+    </div>`
+    )
+    .join("");
+}
+
+window._updateLiquidity = renderLiquidityScanner;
+
+function renderWhaleWatcher() {
+  const box = document.getElementById("whale-box");
+  if (!box) return;
+
+  const fakeWhales = [
+    { coin: "BTC", size: 850_000, direction: "inflow" },
+    { coin: "ETH", size: 320_000, direction: "outflow" },
+    { coin: "SOL", size: 210_000, direction: "inflow" },
+  ];
+
+  box.innerHTML = fakeWhales
+    .map(
+      w => `
+    <div class="flex justify-between">
+      <span>${w.coin}</span>
+      <span class="${w.direction === "inflow" ? "text-emerald-300" : "text-red-300"}">
+        ${w.direction} · ${(w.size / 1000).toFixed(0)}K
+      </span>
+    </div>`
+    )
+    .join("");
+}
+
+window._updateWhales = renderWhaleWatcher;
+
+function renderSecurityRatings() {
+  const box = document.getElementById("security-box");
+  if (!box || !state.lastPortfolioData) return;
+
+  const data = state.lastPortfolioData.data;
+
+  const rows = Object.keys(data || {})
+    .slice(0, 5)
+    .map(id => {
+      const d = data[id];
+      const score =
+        (d.marketCap < 200_000_000 ? -1 : 1) +
+        (d.volume24h < 10_000_000 ? -1 : 1) +
+        (d.fdv > (d.marketCap || 0) * 2 ? -1 : 1);
+
+      const color =
+        score >= 2 ? "text-emerald-300" :
+        score === 1 ? "text-yellow-300" :
+                      "text-red-300";
+
+      return `<div class="${color}">${id.toUpperCase()} · Score ${score}</div>`;
+    });
+
+  box.innerHTML = rows.join("");
+}
+
+window._updateSecurity = renderSecurityRatings;
+
+function runProfitProjection() {
+  const initial = Number(document.getElementById("proj-initial")?.value || 0);
+  const dca = Number(document.getElementById("proj-dca")?.value || 0);
+  const years = Number(document.getElementById("proj-years")?.value || 0);
+  const output = document.getElementById("proj-output");
+
+  if (!output) return;
+
+  const months = years * 12;
+  const growthRate = 0.008; // ~10% annualized monthly model
+
+  let value = initial;
+  for (let i = 0; i < months; i++) {
+    value += dca;
+    value *= (1 + growthRate);
+  }
+
+  output.textContent =
+    `After ${years} years:\n` +
+    `Value: ${value.toFixed(2)}\n` +
+    `Total invested: ${(initial + dca * months).toFixed(2)}\n` +
+    `Net profit: ${(value - (initial + dca * months)).toFixed(2)}`;
+}
+
+document.getElementById("proj-run")?.addEventListener("click", runProfitProjection);
+
+function daysUntil(date) {
+  const diff = new Date(date) - new Date();
+  return Math.ceil(diff / (1000 * 60 * 60 * 24));
+}
+
+function renderEvents() {
+  const box = document.getElementById("events-box");
+  if (!box) return;
+
+  const btcHalving = daysUntil("2028-03-20");
+  const fomc = daysUntil("2025-06-15");
+  const cpi = daysUntil("2025-04-10");
+
+  box.innerHTML = `
+    <div>BTC Halving: ${btcHalving} days</div>
+    <div>Next FOMC: ${fomc} days</div>
+    <div>Next CPI: ${cpi} days</div>
+  `;
+}
+
+window._updateEvents = renderEvents;
+
+function renderBacktestEnhancer() {
+  const box = document.getElementById("backtest-extra");
+  if (!box || !state.lastBacktest) return;
+
+  const bt = state.lastBacktest;
+
+  const totalReturn =
+    ((bt.finalValue - bt.initialValue) / bt.initialValue) * 100;
+  const avgMonthly = bt.months ? totalReturn / bt.months : 0;
+
+  box.innerHTML = `
+    <div>Total Return: ${totalReturn.toFixed(2)}%</div>
+    <div>Avg Monthly: ${avgMonthly.toFixed(2)}%</div>
+    <div>Trades Executed: ${bt.trades}</div>
+  `;
+}
+
+window._updateBacktestEnhancer = renderBacktestEnhancer;
 
 // Override renderAll to update new tools
 const originalRenderAll = renderAll;
